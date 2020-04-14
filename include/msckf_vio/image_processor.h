@@ -388,6 +388,10 @@ private:
   std::map<FeatureIDType, int> feature_lifetime;
   void updateFeatureLifetime();
   void featureLifetimeStatistics();
+
+  // For computing tracking time
+  double total_tracking_time;
+  int total_callback_time;
 };
 
 typedef ImageProcessor::Ptr ImageProcessorPtr;

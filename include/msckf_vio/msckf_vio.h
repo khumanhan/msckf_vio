@@ -46,7 +46,9 @@ class MsckfVio {
     MsckfVio operator=(const MsckfVio&) = delete;
 
     // Destructor
-    ~MsckfVio() {}
+    ~MsckfVio() {
+        printf("mean mapping time: %f\n", total_mapping_time / total_callback_time);
+    }
 
     /*
      * @brief initialize Initialize the VIO.
@@ -223,6 +225,10 @@ class MsckfVio {
     // only used to determine the timing threshold of
     // each iteration of the filter.
     double frame_rate;
+
+    // For computing mapping time
+    double total_mapping_time;
+    int total_callback_time;
 
     // Debugging variables and functions
     void mocapOdomCallback(

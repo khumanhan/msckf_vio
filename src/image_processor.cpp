@@ -29,7 +29,9 @@ ImageProcessor::ImageProcessor(ros::NodeHandle& n) :
   //img_transport(n),
   stereo_sub(10),
   prev_features_ptr(new GridFeatures()),
-  curr_features_ptr(new GridFeatures()) {
+  curr_features_ptr(new GridFeatures()),
+  total_tracking_time(0.0),
+  total_callback_time(0) {
   return;
 }
 
@@ -37,6 +39,7 @@ ImageProcessor::~ImageProcessor() {
   destroyAllWindows();
   //ROS_INFO("Feature lifetime statistics:");
   //featureLifetimeStatistics();
+  printf("mean tracking time: %f\n", total_tracking_time / total_callback_time);
   return;
 }
 
@@ -211,7 +214,8 @@ void ImageProcessor::stereoCallback(
     const sensor_msgs::ImageConstPtr& cam1_img) {
 
   //cout << "==================================" << endl;
-
+  double start_processing_time = ros::Time::now().toSec();
+  printf("start_processing_time: %f\n", start_processing_time);
   // Get the current image.
   cam0_curr_img_ptr = cv_bridge::toCvShare(cam0_img,
       sensor_msgs::image_encodings::MONO8);
@@ -275,6 +279,13 @@ void ImageProcessor::stereoCallback(
   cam0_prev_img_ptr = cam0_curr_img_ptr;
   prev_features_ptr = curr_features_ptr;
   std::swap(prev_cam0_pyramid_, curr_cam0_pyramid_);
+
+  double end_processing_time = ros::Time::now().toSec();
+  printf("end_processing_time: %f\n", end_processing_time);
+  double processing_time = end_processing_time - start_processing_time;
+  printf("processing_time: %f\n", processing_time);
+  total_tracking_time += processing_time;
+  total_callback_time++;
 
   // Initialize the current features to empty vectors.
   curr_features_ptr.reset(new GridFeatures());

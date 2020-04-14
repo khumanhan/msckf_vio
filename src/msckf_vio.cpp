@@ -53,7 +53,9 @@ map<int, double> MsckfVio::chi_squared_test_table;
 MsckfVio::MsckfVio(ros::NodeHandle& pnh):
   is_gravity_set(false),
   is_first_img(true),
-  nh(pnh) {
+  nh(pnh),
+  total_mapping_time(0.0),
+  total_callback_time(0) {
   return;
 }
 
@@ -192,6 +194,7 @@ bool MsckfVio::createRosIO() {
   mocap_odom_sub = nh.subscribe("mocap_odom", 10,
       &MsckfVio::mocapOdomCallback, this);
   mocap_odom_pub = nh.advertise<nav_msgs::Odometry>("gt_odom", 1);
+
 
   return true;
 }
@@ -418,23 +421,32 @@ void MsckfVio::featureCallback(
   double processing_end_time = ros::Time::now().toSec();
   double processing_time =
     processing_end_time - processing_start_time;
-  if (processing_time > 1.0/frame_rate) {
-    ++critical_time_cntr;
-    ROS_INFO("\033[1;31mTotal processing time %f/%d...\033[0m",
-        processing_time, critical_time_cntr);
+
+  //printf("processing_time: %f\n", processing_time);
+
+  total_mapping_time += processing_time;
+  //printf("total mean mapping time: %f\n", total_mapping_time);
+
+  total_callback_time++;
+  //printf("total callback time: %d\n", total_callback_time);
+
+  //if (processing_time > 1.0/frame_rate) {
+    //++critical_time_cntr;
+    //ROS_INFO("\033[1;31mTotal processing time %f/\033[0m",
+     //   processing_time/*, critical_time_cntr*/);
     //printf("IMU processing time: %f/%f\n",
     //    imu_processing_time, imu_processing_time/processing_time);
     //printf("State augmentation time: %f/%f\n",
     //    state_augmentation_time, state_augmentation_time/processing_time);
     //printf("Add observations time: %f/%f\n",
     //    add_observations_time, add_observations_time/processing_time);
-    printf("Remove lost features time: %f/%f\n",
+    /*printf("Remove lost features time: %f/%f\n",
         remove_lost_features_time, remove_lost_features_time/processing_time);
     printf("Remove camera states time: %f/%f\n",
-        prune_cam_states_time, prune_cam_states_time/processing_time);
+        prune_cam_states_time, prune_cam_states_time/processing_time);*/
     //printf("Publish time: %f/%f\n",
-    //    publish_time, publish_time/processing_time);
-  }
+     //   publish_time, publish_time/processing_time);
+  //}
 
   return;
 }
