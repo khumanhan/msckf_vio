@@ -738,7 +738,7 @@ void MsckfVio::stateAugmentation(const double& time) {
   J.block<3, 3>(3, 0) = skewSymmetric(R_w_i.transpose()*t_c_i);
   //J.block<3, 3>(3, 0) = -R_w_i.transpose()*skewSymmetric(t_c_i);
   J.block<3, 3>(3, 12) = Matrix3d::Identity();
-  J.block<3, 3>(3, 18) = Matrix3d::Identity();
+  J.block<3, 3>(3, 18) = R_w_i.transpose();
 
   // Resize the state covariance matrix.
   size_t old_rows = state_server.state_cov.rows();
@@ -1436,7 +1436,7 @@ void MsckfVio::publish(const ros::Time& time) {
 
   // Publish the 3D positions of the features that
   // has been initialized.
-  pcl::PointCloud<pcl::PointXYZ>::Ptr feature_msg_ptr(
+  boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > feature_msg_ptr(
       new pcl::PointCloud<pcl::PointXYZ>());
   feature_msg_ptr->header.frame_id = fixed_frame_id;
   feature_msg_ptr->height = 1;
